@@ -1,5 +1,7 @@
 name: Scheduled Playwright Tests
 on:
+  push:
+    branches: [ main ]
   schedule:
     # Runs every day at 11:30 PM Singapore Time (15:30 UTC)
     # Adjust this cron expression to change the time
