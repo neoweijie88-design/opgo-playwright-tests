@@ -27,34 +27,44 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      # --- 1. Set up and Connect to OpenVPN ---
+      # --- Set up and Connect to OpenVPN ---
       - name: Install and Connect OpenVPN
         env:
           OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
         run: |
           sudo apt-get update && sudo apt-get install -y openvpn openvpn-systemd-resolved
-          
-          # Write credentials file (if using username/password auth)
+
+          # 1. Verify secrets are populated (lengths only, keeping values secret)
+          echo "OVPN_CONFIG length: ${#OVPN_CONFIG}"
+          echo "OVPN_USERNAME length: ${#OVPN_USERNAME}"
+          if [ -z "$OVPN_CONFIG" ]; then
+            echo "ERROR: OVPN_CONFIG secret is empty!"
+            exit 1
+          fi
+
+          # 2. Write configuration & credentials
           printf "%s\n%s\n" "$OVPN_USERNAME" "$OVPN_PASSWORD" > /tmp/vpn-auth.txt
           chmod 600 /tmp/vpn-auth.txt
-          
-          # Write OpenVPN profile
           echo "$OVPN_CONFIG" > /tmp/client.ovpn
-          
-          # Start OpenVPN as a background service
-          sudo openvpn --config /tmp/client.ovpn --auth-user-pass /tmp/vpn-auth.txt --daemon
-          
-          # Wait up to 20 seconds for the tun0 interface to establish
-          for i in {1..20}; do
+
+          # 3. Start OpenVPN with output logged to /tmp/openvpn.log
+          sudo openvpn --config /tmp/client.ovpn --auth-user-pass /tmp/vpn-auth.txt --log /tmp/openvpn.log --daemon
+
+          # 4. Wait up to 30 seconds for tun0 interface
+          for i in {1..30}; do
             if ip addr show tun0 2>/dev/null | grep -q "inet"; then
-              echo "VPN Connected successfully!"
+              echo "✅ VPN Connected successfully!"
               ip addr show tun0
               exit 0
             fi
-            echo "Waiting for VPN connection..."
+            echo "Waiting for VPN connection... ($i/30)"
             sleep 1
           done
-          echo "Failed to connect to VPN in time." && exit 1
+
+          # 5. Print the full log if connection failed
+          echo "❌ Failed to connect to VPN. Printing OpenVPN logs:"
+          cat /tmp/openvpn.log
+          exit 1
 
       # --- 2. Run Tests ---
       - name: Run Playwright tests
