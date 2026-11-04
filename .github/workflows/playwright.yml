@@ -1,0 +1,35 @@
+name: Scheduled Playwright Tests
+on:
+  schedule:
+    # Runs every day at 11:30 PM Singapore Time (15:30 UTC)
+    # Adjust this cron expression to change the time
+    - cron: '30 15 * * *'
+  workflow_dispatch: # Allows you to trigger the test manually via the GitHub UI
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+
+    - name: Run Playwright tests
+      run: npx playwright test
+
+    - name: Upload Playwright Report
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
