@@ -1,4 +1,5 @@
 name: Scheduled Playwright Tests
+
 on:
   push:
     branches: [ main ]
@@ -12,26 +13,63 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      - uses: actions/checkout@v4
 
-    - name: Run Playwright tests
-      run: npx playwright test
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
 
-    - name: Upload Playwright Report
-      if: ${{ !cancelled() }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      # --- 1. Set up and Connect to OpenVPN ---
+      - name: Install and Connect OpenVPN
+        env:
+          OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y openvpn openvpn-systemd-resolved
+          
+          # Write credentials file (if using username/password auth)
+          printf "%s\n%s\n" "$OVPN_USERNAME" "$OVPN_PASSWORD" > /tmp/vpn-auth.txt
+          chmod 600 /tmp/vpn-auth.txt
+          
+          # Write OpenVPN profile
+          echo "$OVPN_CONFIG" > /tmp/client.ovpn
+          
+          # Start OpenVPN as a background service
+          sudo openvpn --config /tmp/client.ovpn --auth-user-pass /tmp/vpn-auth.txt --daemon
+          
+          # Wait up to 20 seconds for the tun0 interface to establish
+          for i in {1..20}; do
+            if ip addr show tun0 2>/dev/null | grep -q "inet"; then
+              echo "VPN Connected successfully!"
+              ip addr show tun0
+              exit 0
+            fi
+            echo "Waiting for VPN connection..."
+            sleep 1
+          done
+          echo "Failed to connect to VPN in time." && exit 1
+
+      # --- 2. Run Tests ---
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      # --- 3. Clean up VPN (Runs even if tests fail) ---
+      - name: Disconnect OpenVPN
+        if: always()
+        run: |
+          sudo killall openvpn || true
+          rm -f /tmp/client.ovpn /tmp/vpn-auth.txt
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
