@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-const DONOR = 'LPADonor10';
-const DONOR_NRIC = 'S8663299C';
-const DONEE = 'LPADonee10';
-const DONEE_NRIC = 'S8194870D';
+const DONOR = 'LPADonor16';
+const DONOR_NRIC = 'S9572043I';
+const DONEE = 'LPADonee16';
+const DONEE_NRIC = 'S9827132E';
 const CI_NRIC = 'S2470768G';
 
 test('Account Sign-in', async ({ page }) => {
@@ -87,12 +87,11 @@ test('Donor Online LPA Application', async ({ page }) => {
   await page.getByRole('button', { name: 'Proceed' }).click();
 
   await expect(page.locator('#OPGO_Common_CW_wt7_block_OPGO_TH_wt4_block_wt66_OutSystemsUIWeb_wt6_block_wtContent_wtMainContent_wtMainContent_wtMainContent_OPGO_TH_wt129_block_wtMainContent_OPGO_Common_CW_wt39_block_OPGO_Patterns_wt24_block_wtTitle_wtTitle')).toContainText('Your LPA has been sent to your Donees.');
-  await expect(page.getByRole('link', { name: 'Book an appointment with a' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Find a Certificate Issuer' })).toBeVisible();
   await page.getByRole('button', { name: 'Back to Home' }).click();
 
   await expect(page.locator('#OPGO_Common_CW_wt9_block_OPGO_TH_wt4_block_wt66_OutSystemsUIWeb_wt6_block_wtContent_wtMainContent_wtMainContent_wtMainContent_wt64_OPGO_Patterns_wt84_block_wtSectionCardPlaceholder_OutSystemsUIWeb_wt23_block_wtColumn1_OutSystemsUIWeb_wt71_block_wtColumn2')).toContainText('Draft – Pending Donee(s)’ Acceptance');
 });
-
 
 test('Donee Acceptance', async ({ page }) => {
   await page.goto('https://opgdev-internet.msf.gov.sg/OPGO_Debug/LoginSampleUsers.aspx');
