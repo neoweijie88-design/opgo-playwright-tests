@@ -4,9 +4,7 @@ on:
   push:
     branches: [ main ]
   schedule:
-    # Runs every day at 11:30 PM Singapore Time (15:30 UTC)
-    # Adjust this cron expression to change the time
-    - cron: '30 15 * * *'
+    - cron: '30 15 * * *' # Runs every day at 11:30 PM Singapore Time (15:30 UTC)
   workflow_dispatch: # Allows you to trigger the test manually via the GitHub UI
 
 jobs:
@@ -27,46 +25,43 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      # --- Set up and Connect to OpenVPN ---
+      # --- 1. Set up and Connect to OpenVPN (Cert-Only) ---
       - name: Install and Connect OpenVPN
         env:
           OVPN_CONFIG: ${{ secrets.OVPN_CONFIG }}
         run: |
           sudo apt-get update && sudo apt-get install -y openvpn openvpn-systemd-resolved
-
-          # 1. Verify secrets are populated (lengths only, keeping values secret)
+          
+          # Diagnostic check (Keeping secret value safe)
           echo "OVPN_CONFIG length: ${#OVPN_CONFIG}"
-          echo "OVPN_USERNAME length: ${#OVPN_USERNAME}"
           if [ -z "$OVPN_CONFIG" ]; then
-            echo "ERROR: OVPN_CONFIG secret is empty!"
+            echo "ERROR: OVPN_CONFIG secret is missing or empty in your GitHub settings!"
             exit 1
           fi
 
-          # 2. Write configuration & credentials
-          printf "%s\n%s\n" "$OVPN_USERNAME" "$OVPN_PASSWORD" > /tmp/vpn-auth.txt
-          chmod 600 /tmp/vpn-auth.txt
+          # Write OpenVPN profile
           echo "$OVPN_CONFIG" > /tmp/client.ovpn
-
-          # 3. Start OpenVPN with output logged to /tmp/openvpn.log
-          sudo openvpn --config /tmp/client.ovpn --auth-user-pass /tmp/vpn-auth.txt --log /tmp/openvpn.log --daemon
-
-          # 4. Wait up to 30 seconds for tun0 interface
+          
+          # Start OpenVPN as a background service without credentials
+          sudo openvpn --config /tmp/client.ovpn --log /tmp/openvpn.log --daemon
+          
+          # Wait up to 30 seconds for the connection to establish (checking tun0 interface)
           for i in {1..30}; do
             if ip addr show tun0 2>/dev/null | grep -q "inet"; then
-              echo "✅ VPN Connected successfully!"
+              echo "VPN Connected successfully!"
               ip addr show tun0
               exit 0
             fi
             echo "Waiting for VPN connection... ($i/30)"
             sleep 1
           done
-
-          # 5. Print the full log if connection failed
-          echo "❌ Failed to connect to VPN. Printing OpenVPN logs:"
+          
+          # If it failed to connect, print the log to debug immediately
+          echo "VPN Connection Failed! Showing logs below:"
           cat /tmp/openvpn.log
           exit 1
 
-      # --- 2. Run Tests ---
+      # --- 2. Run Playwright Tests ---
       - name: Run Playwright tests
         run: npx playwright test
 
@@ -75,8 +70,9 @@ jobs:
         if: always()
         run: |
           sudo killall openvpn || true
-          rm -f /tmp/client.ovpn /tmp/vpn-auth.txt
+          rm -f /tmp/client.ovpn
 
+      # --- 4. Upload test reports ---
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
