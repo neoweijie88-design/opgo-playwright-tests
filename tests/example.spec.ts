@@ -298,15 +298,21 @@ test('Donor Revocation', async ({ page }) => {
 
   await expect(page.getByText('Registered LPA', { exact: true })).toBeVisible();
   await expect(page.getByText('Notification to Donee(s)')).toBeVisible();
+
+  const postCheckbox = page.getByRole('checkbox', { name: 'Sent by post' });
+  const emailCheckbox = page.getByRole('checkbox', { name: 'Sent by email' });
+
   await page.getByRole('checkbox', { name: 'I confirm that I have' }).click();
-  await page.getByRole('checkbox', { name: 'Delivered in person' }).click();
-  await page.getByRole('checkbox', { name: 'Sent by post' }).click();
-  await page.getByRole('checkbox', { name: 'Sent by email' }).click();
+  await postCheckbox.click();
+  await expect(postCheckbox).toBeChecked();
+  await emailCheckbox.click();
+  await expect(emailCheckbox).toBeChecked();
   
   await expect(page.getByText('Reason for Revocation')).toBeVisible();
   await page.locator('#OPGO_Common_CW_wt46_block_OPGO_TH_wt4_block_wt66_OutSystemsUIWeb_wt6_block_wtContent_wtMainContent_wtMainContent_wtMainContent_OPGO_TH_wt53_block_wtMainContent_wt78_OPGO_Patterns_wt12_block_wtSectionCardPlaceholder_wtRevocationReasonInput').selectOption('7');
   await page.getByRole('textbox', { name: 'Email Address' }).click();
   await page.getByRole('textbox', { name: 'Email Address' }).fill(`${DONOR}@gmail.com`);
+
   await page.getByRole('button', { name: 'Next' }).click();
 
   await expect(page.getByText('Statement by Donor')).toBeVisible();
