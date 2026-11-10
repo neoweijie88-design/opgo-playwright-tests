@@ -218,39 +218,39 @@ test('Donor Payment', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Make Payment' }).click();
 
-  /* enets bypass
+  //enets bypass
 
-  await expect(page.getByText('Review your invoice and')).toBeVisible();
-  await page.getByRole('button', { name: 'Bypass eNets' }).click();
-  await expect(page.getByText('Payment successful. You can')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Print Receipt' })).toBeVisible();
+  // await expect(page.getByText('Review your invoice and')).toBeVisible();
+  // await page.getByRole('button', { name: 'Bypass eNets' }).click();
+  // await expect(page.getByText('Payment successful. You can')).toBeVisible();
+  // await expect(page.getByRole('button', { name: 'Print Receipt' })).toBeVisible();
+  // await page.getByRole('button', { name: 'Continue' }).click();
+
+  // await expect(page.getByText('Your LPA has been submitted')).toBeVisible();
+  // await expect(page.getByText('You will be notified via SMS')).toBeVisible();
+  // await page.getByRole('button', { name: 'Return to Dashboard' }).click();
+ 
+  // card payment
+  await page.getByRole('button', { name: 'Make Payment' }).click();
+  await expect(page.getByText('Proceed to payment?')).toBeVisible();
+  await expect(page.getByText('You will be redirected to the')).toBeVisible();
+  await page.getByText('Proceed to Payment', { exact: true }).click();
+  await page.getByRole('textbox', { name: 'Name on Card Email' }).click();
+  await page.getByRole('textbox', { name: 'Name on Card Email' }).fill(DONOR);
+  await page.getByRole('textbox', { name: 'Name on Card Email' }).press('Tab');
+  await page.getByRole('textbox', { name: 'Card Number' }).fill('4111111111111111');
+  await page.getByRole('textbox', { name: 'CVV/CVV2' }).click();
+  await page.getByRole('textbox', { name: 'CVV/CVV2' }).fill('123');
+  await page.getByLabel('Expiry Date').selectOption('12');
+  await page.locator('#selectYearId').selectOption('2031');
+  await page.locator('#consumerEmail').click();
+  await page.locator('#consumerEmail').fill(`${DONOR}@gmail.com`);
+  await page.getByRole('button', { name: 'Submit' }).click();
+
   await page.getByRole('button', { name: 'Continue' }).click();
-
   await expect(page.getByText('Your LPA has been submitted')).toBeVisible();
   await expect(page.getByText('You will be notified via SMS')).toBeVisible();
   await page.getByRole('button', { name: 'Return to Dashboard' }).click();
-  */
-
-await page.getByRole('button', { name: 'Make Payment' }).click();
-await expect(page.getByText('Proceed to payment?')).toBeVisible();
-await expect(page.getByText('You will be redirected to the')).toBeVisible();
-await page.getByText('Proceed to Payment', { exact: true }).click();
-await page.getByRole('textbox', { name: 'Name on Card Email' }).click();
-await page.getByRole('textbox', { name: 'Name on Card Email' }).fill(DONOR);
-await page.getByRole('textbox', { name: 'Name on Card Email' }).press('Tab');
-await page.getByRole('textbox', { name: 'Card Number' }).fill('4111111111111111');
-await page.getByRole('textbox', { name: 'CVV/CVV2' }).click();
-await page.getByRole('textbox', { name: 'CVV/CVV2' }).fill('123');
-await page.getByLabel('Expiry Date').selectOption('12');
-await page.locator('#selectYearId').selectOption('2031');
-await page.locator('#consumerEmail').click();
-await page.locator('#consumerEmail').fill(`${DONOR}@gmail.com`);
-await page.getByRole('button', { name: 'Submit' }).click();
-
-await page.getByRole('button', { name: 'Continue' }).click();
-await expect(page.getByText('Your LPA has been submitted')).toBeVisible();
-await expect(page.getByText('You will be notified via SMS')).toBeVisible();
-await page.getByRole('button', { name: 'Return to Dashboard' }).click();
 
   await expect(async () => {
     await page.reload();

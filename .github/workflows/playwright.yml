@@ -60,6 +60,22 @@ jobs:
           echo "VPN Connection Failed! Showing logs below:"
           cat /tmp/openvpn.log
           exit 1
+      
+      # --- 1.2 Diagnose DNS & Routing in your CI Workflow ---
+      - name: Debug 3DS & Network Connectivity
+        run: |
+          echo "=== Public IP ==="
+          curl -s https://ifconfig.me
+          echo ""
+
+          echo "=== Resolve Netcetera ==="
+          nslookup ndm-prev.3dss-non-prod.cloud.netcetera.com || true
+
+          echo "=== Test HTTPS Connection to Netcetera ==="
+          curl -Iv --connect-timeout 10 https://ndm-prev.3dss-non-prod.cloud.netcetera.com || true
+
+          echo "=== Routing Table ==="
+          ip route
 
       # --- 2. Run Playwright Tests ---
       - name: Run Playwright tests
