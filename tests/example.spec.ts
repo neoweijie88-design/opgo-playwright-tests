@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-const DONOR = 'LPADonor16';
-const DONOR_NRIC = 'S9572043I';
-const DONEE = 'LPADonee16';
-const DONEE_NRIC = 'S9827132E';
+const DONOR = 'LPADonor17';
+const DONOR_NRIC = 'S8162873D';
+const DONEE = 'LPADonee17';
+const DONEE_NRIC = 'S8325187E';
 const CI_NRIC = 'S2470768G';
 
 test('Account Sign-in', async ({ page }) => {
@@ -298,10 +298,10 @@ test('Donor Revocation', async ({ page }) => {
 
   await expect(page.getByText('Registered LPA', { exact: true })).toBeVisible();
   await expect(page.getByText('Notification to Donee(s)')).toBeVisible();
-  await page.getByRole('checkbox', { name: 'I confirm that I have' }).check();
-  await page.getByRole('checkbox', { name: 'Delivered in person' }).check();
-  await page.getByRole('checkbox', { name: 'Sent by post' }).check();
-  await page.getByRole('checkbox', { name: 'Sent by email' }).check();
+  await page.getByRole('checkbox', { name: 'I confirm that I have' }).click();
+  await page.getByRole('checkbox', { name: 'Delivered in person' }).click();
+  await page.getByRole('checkbox', { name: 'Sent by post' }).click();
+  await page.getByRole('checkbox', { name: 'Sent by email' }).click();
   
   await expect(page.getByText('Reason for Revocation')).toBeVisible();
   await page.locator('#OPGO_Common_CW_wt46_block_OPGO_TH_wt4_block_wt66_OutSystemsUIWeb_wt6_block_wtContent_wtMainContent_wtMainContent_wtMainContent_OPGO_TH_wt53_block_wtMainContent_wt78_OPGO_Patterns_wt12_block_wtSectionCardPlaceholder_wtRevocationReasonInput').selectOption('7');
