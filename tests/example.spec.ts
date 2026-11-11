@@ -303,12 +303,18 @@ test('Donor Revocation', async ({ page }) => {
   await page.locator('#OPGO_Common_CW_wt46_block_OPGO_TH_wt4_block_wt66_OutSystemsUIWeb_wt6_block_wtContent_wtMainContent_wtMainContent_wtMainContent_OPGO_TH_wt53_block_wtMainContent_wt78_OPGO_Patterns_wt12_block_wtSectionCardPlaceholder_wtRevocationReasonInput').selectOption('7');
   await page.getByRole('textbox', { name: 'Email Address' }).click();
   await page.getByRole('textbox', { name: 'Email Address' }).fill(`${DONOR}@gmail.com`);
-
   await page.getByRole('checkbox', { name: 'I confirm that I have' }).check();
-  await page.getByRole('checkbox', { name: 'Delivered in person' }).check();
-  await page.getByRole('checkbox', { name: 'Sent by post' }).check();
+  await expect(page.getByRole('checkbox', { name: 'I confirm that I have' })).toBeChecked();
+  await page.waitForLoadState('networkidle');
   await page.getByRole('checkbox', { name: 'Sent by email' }).check();
-
+  await expect(page.getByRole('checkbox', { name: 'Sent by email' })).toBeChecked();
+  await page.waitForTimeout(1000);
+  await page.getByRole('checkbox', { name: 'Sent by post' }).check();
+  await expect(page.getByRole('checkbox', { name: 'Sent by post' })).toBeChecked();
+  await page.waitForTimeout(1000);
+  await page.getByRole('checkbox', { name: 'Delivered in person' }).check();
+  await expect(page.getByRole('checkbox', { name: 'Delivered in person' })).toBeChecked();
+  await page.waitForTimeout(1000);
   await page.getByRole('button', { name: 'Next' }).click();
 
   await expect(page.getByText('Statement by Donor')).toBeVisible();
