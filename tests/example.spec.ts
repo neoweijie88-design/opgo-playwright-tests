@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-const DONOR = 'LPADonor17';
-const DONOR_NRIC = 'S8162873D';
-const DONEE = 'LPADonee17';
-const DONEE_NRIC = 'S8325187E';
+const DONOR = 'LPADonor18';
+const DONOR_NRIC = 'S8368928E';
+const DONEE = 'LPADonee18';
+const DONEE_NRIC = 'S8120075J';
 const CI_NRIC = 'S2470768G';
 
 test('Account Sign-in', async ({ page }) => {
